@@ -101,16 +101,39 @@ nginx -t
 systemctl reload nginx
 
 say "SSL certificate (DNS A record for $DOMAIN must already point to this server)"
-if [[ -d /etc/letsencrypt/live/$DOMAIN ]]; then
-  echo "Certificate already exists."
-else
+if [[ ! -d /etc/letsencrypt/live/$DOMAIN ]]; then
   if ! command -v certbot >/dev/null; then apt-get install -y certbot python3-certbot-nginx; fi
-  if certbot --nginx -d "$DOMAIN" --redirect --agree-tos -m "$ADMIN_EMAIL" --non-interactive; then
-    echo "HTTPS enabled."
-  else
-    echo "Certbot failed (usually DNS not pointing here yet). Fix DNS, then run:"
-    echo "  sudo certbot --nginx -d $DOMAIN --redirect"
-  fi
+  # certonly: never let Certbot edit Nginx files. This host has *.kwingsmedia.com server blocks,
+  # and "certbot --nginx" attached the new certificate to one of those instead of this site.
+  certbot certonly --nginx -d "$DOMAIN" --agree-tos -m "$ADMIN_EMAIL" --non-interactive ||
+    { echo "Certbot failed (usually DNS not pointing here yet). Fix DNS, then re-run this script."; exit 1; }
+fi
+if ! grep -q "listen 443" "$SITE"; then
+  # Turn the HTTP-only site into: port 80 redirect + HTTPS server with the same proxy settings.
+  PROXY_BODY=$(sed -n '/client_max_body_size/,/location \/ /p' "$SITE")
+  cat >"$SITE" <<EOF
+server {
+    listen 80;
+    listen [::]:80;
+    server_name $DOMAIN;
+    return 301 https://\$host\$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name $DOMAIN;
+    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+    add_header Strict-Transport-Security "max-age=31536000" always;
+$PROXY_BODY
+}
+EOF
+  nginx -t
+  systemctl reload nginx
+  echo "HTTPS enabled."
 fi
 
 say "GitHub Actions runner"
