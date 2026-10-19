@@ -81,9 +81,7 @@ export function Shell({ children }: { children: ReactNode }) {
                   active ? 'bg-white/[0.07] text-white' : 'hover:bg-white/[0.04] hover:text-white'
                 }`}
               >
-                {active && (
-                  <span className="absolute inset-y-2 -left-3 w-1 rounded-r-full bg-blue-400" />
-                )}
+                {active && <span className="absolute inset-y-2 -left-3 w-1 rounded-r-full bg-blue-400" />}
                 <Icon
                   className={`size-[18px] ${active ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-200'}`}
                 />

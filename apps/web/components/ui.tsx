@@ -16,7 +16,8 @@ type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
 const variants: Record<Variant, string> = {
   primary:
     'bg-blue-600 text-white hover:bg-blue-700 shadow-[inset_0_1px_0_rgb(255_255_255/0.12),0_1px_2px_rgb(0_0_0/0.2)]',
-  secondary: 'bg-white text-slate-700 border border-slate-300 hover:border-slate-400 hover:bg-slate-50 shadow-sm',
+  secondary:
+    'bg-white text-slate-700 border border-slate-300 hover:border-slate-400 hover:bg-slate-50 shadow-sm',
   danger: 'bg-red-600 text-white hover:brightness-110 shadow-sm',
   ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
 };
@@ -57,7 +58,11 @@ export function IconButton({
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgb(27_27_24/0.04),0_8px_24px_-12px_rgb(27_27_24/0.08)] ${className}`}>{children}</div>
+    <div
+      className={`rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgb(27_27_24/0.04),0_8px_24px_-12px_rgb(27_27_24/0.08)] ${className}`}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -113,7 +118,9 @@ export function StatCard({
           </span>
         )}
       </div>
-      <div className={`mt-3 font-display text-[1.65rem] leading-tight font-medium tabular-nums ${tones[tone].text}`}>
+      <div
+        className={`mt-3 font-display text-[1.65rem] leading-tight font-medium tabular-nums ${tones[tone].text}`}
+      >
         {value}
       </div>
       {hint && <div className="mt-1.5 text-xs text-slate-400">{hint}</div>}
@@ -148,7 +155,9 @@ export function Badge({
     amber: 'bg-amber-50 text-amber-800 ring-amber-200',
   };
   return (
-    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${map[tone]}`}>
+    <span
+      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${map[tone]}`}
+    >
       {children}
     </span>
   );
@@ -215,7 +224,9 @@ export function TableState({
     );
   if (loading && empty) return <Spinner />;
   if (empty) return <Empty message={emptyMessage} />;
-  return <div className={`overflow-x-auto transition-opacity ${loading ? 'opacity-60' : ''}`}>{children}</div>;
+  return (
+    <div className={`overflow-x-auto transition-opacity ${loading ? 'opacity-60' : ''}`}>{children}</div>
+  );
 }
 
 export function Pagination({
