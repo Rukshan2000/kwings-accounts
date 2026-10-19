@@ -127,7 +127,7 @@ export default function AccountsPage() {
 
       <Card>
         <div className="flex items-center justify-between px-5 py-4">
-          <h2 className="font-semibold text-slate-900">All accounts</h2>
+          <h2 className="font-display text-lg font-medium text-slate-900">All accounts</h2>
           <label className="flex items-center gap-2 text-sm text-slate-600">
             <input
               type="checkbox"
@@ -200,7 +200,7 @@ export default function AccountsPage() {
       </Card>
 
       <Card className="mt-6">
-        <h2 className="px-5 py-4 font-semibold text-slate-900">Transfers</h2>
+        <h2 className="px-5 py-4 font-display text-lg font-medium text-slate-900">Transfers</h2>
         <TableState
           loading={transfers.loading}
           error={transfers.error}

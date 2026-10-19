@@ -109,21 +109,21 @@ export default function DashboardPage() {
 
           <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
             <Card className="p-5">
-              <h2 className="mb-4 font-semibold text-slate-900">Income vs Expenses</h2>
+              <h2 className="mb-4 font-display text-lg font-medium text-slate-900">Income vs Expenses</h2>
               <BarChart
                 data={data.monthly}
                 series={[
-                  { key: 'income', label: 'Income', color: '#10b981' },
-                  { key: 'expenses', label: 'Expenses', color: '#ef4444' },
+                  { key: 'income', label: 'Income', color: '#1f8a5b' },
+                  { key: 'expenses', label: 'Expenses', color: '#e07a5f' },
                 ]}
               />
             </Card>
             <Card className="p-5">
-              <h2 className="mb-4 font-semibold text-slate-900">Monthly Profit</h2>
+              <h2 className="mb-4 font-display text-lg font-medium text-slate-900">Monthly Profit</h2>
               <BarChart
                 data={data.monthly}
                 series={[
-                  { key: 'profit', label: 'Profit / Loss', color: '#2563eb', negativeColor: '#ef4444' },
+                  { key: 'profit', label: 'Profit / Loss', color: '#1f2b25', negativeColor: '#e07a5f' },
                 ]}
               />
             </Card>
@@ -131,7 +131,7 @@ export default function DashboardPage() {
 
           <Card className="mt-6">
             <div className="flex items-center justify-between px-5 py-4">
-              <h2 className="font-semibold text-slate-900">Recent Transactions</h2>
+              <h2 className="font-display text-lg font-medium text-slate-900">Recent Transactions</h2>
               <Link href="/transactions" className="text-sm font-medium text-blue-600 hover:underline">
                 View all
               </Link>

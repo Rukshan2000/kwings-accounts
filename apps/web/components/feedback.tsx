@@ -44,7 +44,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
           {toasts.map((t) => (
             <div
               key={t.id}
-              className="flex max-w-sm items-start gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm shadow-lg"
+              className="rise flex max-w-sm items-start gap-2.5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-xl"
             >
               {t.kind === 'success' ? (
                 <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />
@@ -57,22 +57,22 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
         </div>
         {pending && (
           <div
-            className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/45 p-4"
+            className="fixed inset-0 z-40 flex items-center justify-center bg-navy-900/40 p-4 backdrop-blur-[3px]"
             role="alertdialog"
             aria-modal="true"
           >
-            <div className="w-full max-w-sm rounded-xl bg-white p-5 shadow-xl">
-              <p className="text-sm text-slate-700">{pending.message}</p>
+            <div className="rise w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+              <p className="text-[15px] leading-relaxed text-slate-700">{pending.message}</p>
               <div className="mt-5 flex justify-end gap-2">
                 <button
                   autoFocus
-                  className="rounded-lg border border-slate-300 px-3.5 py-2 text-sm font-medium hover:bg-slate-50"
+                  className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium hover:bg-slate-50"
                   onClick={() => answer(false)}
                 >
                   Cancel
                 </button>
                 <button
-                  className="rounded-lg bg-red-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-red-700"
+                  className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:brightness-110"
                   onClick={() => answer(true)}
                 >
                   {pending.confirmLabel}

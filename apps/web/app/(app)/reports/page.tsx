@@ -107,7 +107,7 @@ export default function ReportsPage() {
             </select>
           )}
         </div>
-        {r && <h2 className="px-5 pt-4 font-semibold text-slate-900">{r.title}</h2>}
+        {r && <h2 className="px-5 pt-4 font-display text-lg font-medium text-slate-900">{r.title}</h2>}
         <TableState
           loading={report.loading}
           error={report.error}

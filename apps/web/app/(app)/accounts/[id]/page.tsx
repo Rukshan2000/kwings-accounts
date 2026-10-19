@@ -65,7 +65,7 @@ export default function AccountDetailPage({ params }: { params: Promise<{ id: st
         </div>
       )}
       <Card>
-        <h2 className="px-5 py-4 font-semibold text-slate-900">Transaction history</h2>
+        <h2 className="px-5 py-4 font-display text-lg font-medium text-slate-900">Transaction history</h2>
         <TableState
           loading={history.loading}
           error={history.error}

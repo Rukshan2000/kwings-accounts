@@ -50,7 +50,7 @@ function Users() {
     <Card>
       <div className="flex items-center justify-between px-5 py-4">
         <div>
-          <h2 className="font-semibold text-slate-900">Users</h2>
+          <h2 className="font-display text-lg font-medium text-slate-900">Users</h2>
           <p className="text-xs text-slate-500">Everyone listed here can log in with full access.</p>
         </div>
         <Button onClick={() => setForm({ name: '', email: '', password: '' })}>
@@ -176,7 +176,7 @@ function ChangePassword() {
 
   return (
     <Card className="p-5">
-      <h2 className="mb-4 font-semibold text-slate-900">Change password</h2>
+      <h2 className="mb-4 font-display text-lg font-medium text-slate-900">Change password</h2>
       <form onSubmit={submit} className="space-y-4">
         <Field label="Current password">
           <input
@@ -238,7 +238,7 @@ function Categories() {
   return (
     <Card>
       <div className="flex items-center justify-between px-5 py-4">
-        <h2 className="font-semibold text-slate-900">Categories</h2>
+        <h2 className="font-display text-lg font-medium text-slate-900">Categories</h2>
         <Button onClick={() => setForm({ name: '', type: 'income' })}>
           <Plus className="size-4" /> New category
         </Button>

@@ -14,10 +14,11 @@ import { useToast } from './feedback';
 
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
 const variants: Record<Variant, string> = {
-  primary: 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm',
-  secondary: 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-sm',
-  danger: 'bg-red-600 text-white hover:bg-red-700 shadow-sm',
-  ghost: 'text-slate-600 hover:bg-slate-100',
+  primary:
+    'bg-blue-600 text-white hover:bg-blue-700 shadow-[inset_0_1px_0_rgb(255_255_255/0.12),0_1px_2px_rgb(0_0_0/0.2)]',
+  secondary: 'bg-white text-slate-700 border border-slate-300 hover:border-slate-400 hover:bg-slate-50 shadow-sm',
+  danger: 'bg-red-600 text-white hover:brightness-110 shadow-sm',
+  ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
 };
 
 export function Button({
@@ -31,7 +32,7 @@ export function Button({
     <button
       {...props}
       disabled={props.disabled || loading}
-      className={`inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${variants[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition active:scale-[0.98] focus-visible:ring-4 focus-visible:ring-blue-500/25 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 ${variants[variant]} ${className}`}
     >
       {loading && <Loader2 className="size-4 animate-spin" />}
       {children}
@@ -49,14 +50,14 @@ export function IconButton({
       {...props}
       aria-label={label}
       title={label}
-      className={`rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 ${className}`}
+      className={`rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-4 focus-visible:ring-blue-500/25 focus-visible:outline-none ${className}`}
     />
   );
 }
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-xl border border-slate-200 bg-white shadow-sm ${className}`}>{children}</div>
+    <div className={`rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgb(27_27_24/0.04),0_8px_24px_-12px_rgb(27_27_24/0.08)] ${className}`}>{children}</div>
   );
 }
 
@@ -70,10 +71,12 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
+        <h1 className="font-display text-3xl font-medium tracking-tight text-slate-900 sm:text-[2.25rem]">
+          {title}
+        </h1>
+        {subtitle && <p className="mt-1.5 text-sm text-slate-500">{subtitle}</p>}
       </div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </div>
@@ -81,10 +84,10 @@ export function PageHeader({
 }
 
 const tones = {
-  neutral: 'text-slate-900',
-  green: 'text-emerald-600',
-  red: 'text-red-600',
-  blue: 'text-blue-600',
+  neutral: { text: 'text-slate-900', chip: 'bg-slate-100 text-slate-600' },
+  green: { text: 'text-emerald-600', chip: 'bg-emerald-50 text-emerald-600' },
+  red: { text: 'text-red-600', chip: 'bg-red-50 text-red-600' },
+  blue: { text: 'text-blue-600', chip: 'bg-blue-50 text-blue-500' },
 };
 
 export function StatCard({
@@ -101,13 +104,19 @@ export function StatCard({
   hint?: string;
 }) {
   return (
-    <Card className="p-4">
-      <div className="flex items-center justify-between text-sm text-slate-500">
-        <span>{label}</span>
-        {icon && <span className="text-slate-400">{icon}</span>}
+    <Card className="p-5 transition hover:-translate-y-0.5 hover:shadow-md">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[11px] font-semibold tracking-[0.08em] text-slate-500 uppercase">{label}</span>
+        {icon && (
+          <span className={`grid size-8 shrink-0 place-items-center rounded-full ${tones[tone].chip}`}>
+            {icon}
+          </span>
+        )}
       </div>
-      <div className={`mt-2 text-xl font-semibold tabular-nums ${tones[tone]}`}>{value}</div>
-      {hint && <div className="mt-1 text-xs text-slate-400">{hint}</div>}
+      <div className={`mt-3 font-display text-[1.65rem] leading-tight font-medium tabular-nums ${tones[tone].text}`}>
+        {value}
+      </div>
+      {hint && <div className="mt-1.5 text-xs text-slate-400">{hint}</div>}
     </Card>
   );
 }
@@ -132,14 +141,14 @@ export function Badge({
   tone?: 'slate' | 'green' | 'red' | 'blue' | 'amber';
 }) {
   const map = {
-    slate: 'bg-slate-100 text-slate-700',
-    green: 'bg-emerald-50 text-emerald-700',
-    red: 'bg-red-50 text-red-700',
-    blue: 'bg-blue-50 text-blue-700',
-    amber: 'bg-amber-50 text-amber-700',
+    slate: 'bg-slate-100 text-slate-700 ring-slate-200',
+    green: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+    red: 'bg-red-50 text-red-700 ring-red-200',
+    blue: 'bg-blue-50 text-blue-700 ring-blue-100',
+    amber: 'bg-amber-50 text-amber-800 ring-amber-200',
   };
   return (
-    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${map[tone]}`}>
+    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${map[tone]}`}>
       {children}
     </span>
   );
@@ -148,7 +157,7 @@ export function Badge({
 export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium text-slate-700">{label}</span>
+      <span className="mb-1.5 block text-sm font-medium text-slate-700">{label}</span>
       {children}
       {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
     </label>
@@ -165,8 +174,10 @@ export function Spinner() {
 
 export function Empty({ message, action }: { message: string; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-3 py-12 text-center text-sm text-slate-500">
-      <Inbox className="size-8 text-slate-300" />
+    <div className="flex flex-col items-center gap-3 py-14 text-center text-sm text-slate-500">
+      <span className="grid size-14 place-items-center rounded-full bg-slate-100">
+        <Inbox className="size-6 text-slate-400" />
+      </span>
       {message}
       {action}
     </div>
@@ -176,7 +187,7 @@ export function Empty({ message, action }: { message: string; action?: ReactNode
 export function ErrorNote({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+    <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
       {message}
     </div>
   );
@@ -204,7 +215,7 @@ export function TableState({
     );
   if (loading && empty) return <Spinner />;
   if (empty) return <Empty message={emptyMessage} />;
-  return <div className={`overflow-x-auto ${loading ? 'opacity-60' : ''}`}>{children}</div>;
+  return <div className={`overflow-x-auto transition-opacity ${loading ? 'opacity-60' : ''}`}>{children}</div>;
 }
 
 export function Pagination({
@@ -269,12 +280,12 @@ export function Modal({
     <dialog
       ref={ref}
       onClose={onClose}
-      className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-xl bg-white p-0 text-slate-800 shadow-xl"
+      className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl bg-white p-0 text-slate-800 shadow-2xl"
     >
       {open && (
         <>
-          <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-            <h2 className="text-base font-semibold text-slate-900">{title}</h2>
+          <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+            <h2 className="font-display text-xl font-medium text-slate-900">{title}</h2>
             <IconButton label="Close" onClick={onClose}>
               <X className="size-4" />
             </IconButton>
@@ -319,8 +330,8 @@ export function FormModal({
   return (
     <Modal open={open} onClose={onClose} title={title}>
       <form onSubmit={submit}>
-        <div className="max-h-[70vh] space-y-4 overflow-y-auto px-5 py-4">{children}</div>
-        <div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-3">
+        <div className="max-h-[70vh] space-y-4 overflow-y-auto px-6 py-5">{children}</div>
+        <div className="flex justify-end gap-2 rounded-b-2xl border-t border-slate-200 bg-slate-50 px-6 py-3.5">
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
