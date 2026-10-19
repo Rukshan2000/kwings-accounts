@@ -18,8 +18,7 @@
     "test": "npm test -w @kwings/api",
     "migrate": "npm run migrate -w @kwings/db",
     "migrate:rollback": "npm run migrate:rollback -w @kwings/db",
-    "seed": "npm run seed -w @kwings/db",
-    "create-admin": "npm run create-admin -w @kwings/db"
+    "seed": "npm run seed -w @kwings/db"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",

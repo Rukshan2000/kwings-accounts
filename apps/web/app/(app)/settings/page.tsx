@@ -3,9 +3,12 @@
 import { useState, type FormEvent } from 'react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useConfirm, useToast } from '@/components/feedback';
-import { Button, Card, Field, FormModal, IconButton, PageHeader, TableState } from '@/components/ui';
+import { Badge, Button, Card, Field, FormModal, IconButton, PageHeader, TableState } from '@/components/ui';
 import { api, useApi } from '@/lib/api';
+import { date } from '@/lib/format';
 import type { Category, TxType } from '@/lib/types';
+
+type User = { id: string; name: string; email: string; created_at: string };
 
 export default function SettingsPage() {
   return (
@@ -13,11 +16,138 @@ export default function SettingsPage() {
       <PageHeader title="Settings" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <ChangePassword />
-        <div className="xl:col-span-2">
+        <div className="space-y-6 xl:col-span-2">
+          <Users />
           <Categories />
         </div>
       </div>
     </>
+  );
+}
+
+function Users() {
+  const toast = useToast();
+  const confirm = useConfirm();
+  const users = useApi<User[]>('/users');
+  const me = useApi<User>('/auth/me');
+  const [form, setForm] = useState<{ id?: string; name: string; email: string; password: string } | null>(
+    null,
+  );
+
+  async function remove(u: User) {
+    if (!(await confirm(`Delete user "${u.name}" (${u.email})? They will be logged out immediately.`)))
+      return;
+    try {
+      await api(`/users/${u.id}`, 'DELETE');
+      toast('User deleted');
+      users.reload();
+    } catch (e) {
+      toast((e as Error).message, 'error');
+    }
+  }
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between px-5 py-4">
+        <div>
+          <h2 className="font-semibold text-slate-900">Users</h2>
+          <p className="text-xs text-slate-500">Everyone listed here can log in with full access.</p>
+        </div>
+        <Button onClick={() => setForm({ name: '', email: '', password: '' })}>
+          <Plus className="size-4" /> Add user
+        </Button>
+      </div>
+      <TableState
+        loading={users.loading}
+        error={users.error}
+        empty={!users.data?.length}
+        emptyMessage="No users."
+      >
+        <table className="min-w-full divide-y divide-slate-200 border-t border-slate-200">
+          <thead className="bg-slate-50">
+            <tr>
+              <th className="th">Name</th>
+              <th className="th">Email</th>
+              <th className="th">Added</th>
+              <th className="th" />
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {users.data?.map((u) => (
+              <tr key={u.id}>
+                <td className="td font-medium">
+                  {u.name} {u.id === me.data?.id && <Badge tone="blue">You</Badge>}
+                </td>
+                <td className="td">{u.email}</td>
+                <td className="td">{date(u.created_at)}</td>
+                <td className="td text-right">
+                  <IconButton
+                    label="Edit / reset password"
+                    onClick={() => setForm({ id: u.id, name: u.name, email: u.email, password: '' })}
+                  >
+                    <Pencil className="size-4" />
+                  </IconButton>
+                  <IconButton
+                    label="Delete"
+                    onClick={() => remove(u)}
+                    disabled={u.id === me.data?.id}
+                    className="disabled:opacity-30"
+                  >
+                    <Trash2 className="size-4" />
+                  </IconButton>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </TableState>
+      {form && (
+        <FormModal
+          open
+          title={form.id ? 'Edit user' : 'Add user'}
+          onClose={() => setForm(null)}
+          onSubmit={async () => {
+            if (form.id) await api(`/users/${form.id}`, 'PUT', form);
+            else await api('/users', 'POST', form);
+            toast(form.id ? 'User updated' : 'User added');
+            users.reload();
+          }}
+        >
+          <Field label="Name">
+            <input
+              className="input"
+              required
+              maxLength={100}
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
+          </Field>
+          <Field label="Email">
+            <input
+              type="email"
+              className="input"
+              required
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+            />
+          </Field>
+          <Field
+            label={form.id ? 'New password' : 'Password'}
+            hint={form.id ? 'Leave blank to keep the current password.' : 'At least 8 characters.'}
+          >
+            <input
+              type="password"
+              className="input"
+              autoComplete="new-password"
+              required={!form.id}
+              minLength={8}
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+            />
+          </Field>
+        </FormModal>
+      )}
+    </Card>
   );
 }
 

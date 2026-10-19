@@ -35,7 +35,7 @@ services:
       [
         'sh',
         '-c',
-        'node /app/packages/db/dist/scripts/db.js migrate && node /app/packages/db/dist/scripts/db.js seed && node /app/packages/db/dist/scripts/db.js create-admin',
+        'node /app/packages/db/dist/scripts/db.js migrate && node /app/packages/db/dist/scripts/db.js seed',
       ]
     environment:
       <<: *db-env

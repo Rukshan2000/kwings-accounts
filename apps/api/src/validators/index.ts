@@ -24,6 +24,7 @@ const text = (max: number) => z.string().trim().min(1, 'Required').max(max);
 const optionalText = (max: number) => nullable(z.string().trim().max(max));
 
 export const idParam = z.object({ id });
+const password = z.string().min(8, 'Password must be at least 8 characters').max(200);
 
 export const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
@@ -31,8 +32,15 @@ export const loginSchema = z.object({
 });
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
-  newPassword: z.string().min(8, 'Password must be at least 8 characters').max(200),
+  newPassword: password,
 });
+
+export const userSchema = z.object({
+  name: text(100),
+  email: z.string().trim().toLowerCase().email('Enter a valid email'),
+  password: opt(password), // blank = keep current password
+});
+export const newUserSchema = userSchema.extend({ password });
 
 export const accountSchema = z.object({
   name: text(100),

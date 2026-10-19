@@ -10,7 +10,7 @@ Simple internal financial management for Kwings Media: income, expenses, account
 ```
 apps/api        Express REST API (routes, services/finance.ts, middleware, validators)
 apps/web        Next.js frontend
-packages/db     knexfile, migrations, seeds, scripts/db.ts (migrate | rollback | seed | create-admin)
+packages/db     knexfile, migrations, seeds, scripts/db.ts (migrate | rollback | seed)
 deploy/         deploy.sh (VPS) and the Nginx site config
 ```
 
@@ -37,7 +37,7 @@ Requires Node 22 and PostgreSQL 16.
 ```bash
 cp .env.example .env          # set DB_*, TEST_DB_DATABASE, JWT_SECRET, ADMIN_*
 npm install
-npm run migrate && npm run seed && npm run create-admin
+npm run migrate && npm run seed   # seed adds categories + the ADMIN_* user
 npm run dev                   # API :4000, web http://localhost:3000 (proxies /api → API)
 ```
 
@@ -111,4 +111,4 @@ IMAGE_TAG=$(tail -1 .deploy-history) docker compose -f docker-compose.prod.yml l
 docker compose -f docker-compose.prod.yml exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > backup-$(date +%F).sql
 ```
 
-The admin password can be changed in **Settings**. `create-admin` only creates the admin when that email doesn't exist yet. It never overwrites an existing password.
+Users are managed in **Settings → Users**: add more logins, edit them, reset passwords. The seed creates the first user from `ADMIN_EMAIL` / `ADMIN_PASSWORD` only if that email doesn't exist yet. It never overwrites a password.

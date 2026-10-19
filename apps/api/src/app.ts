@@ -14,6 +14,7 @@ import projects from './routes/projects';
 import reports from './routes/reports';
 import transactions from './routes/transactions';
 import transfers from './routes/transfers';
+import users from './routes/users';
 
 export function createApp() {
   const app = express();
@@ -49,6 +50,7 @@ export function createApp() {
   app.use('/api/projects', projects);
   app.use('/api/investments', investments);
   app.use('/api/reports', reports);
+  app.use('/api/users', users);
   app.use('/api', () => {
     throw notFound('Endpoint');
   });

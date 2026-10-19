@@ -7,8 +7,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "migrate": "tsx scripts/db.ts migrate",
     "migrate:rollback": "tsx scripts/db.ts rollback",
-    "seed": "tsx scripts/db.ts seed",
-    "create-admin": "tsx scripts/db.ts create-admin"
+    "seed": "tsx scripts/db.ts seed"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
