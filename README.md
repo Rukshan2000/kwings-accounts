@@ -113,3 +113,7 @@ docker compose -f docker-compose.prod.yml exec -T postgres sh -c 'pg_dump -U "$P
 ```
 
 Users are managed in **Settings → Users**: add more logins, edit them, reset passwords. The seed creates the first user from `ADMIN_EMAIL` / `ADMIN_PASSWORD` only if that email doesn't exist yet. It never overwrites a password.
+
+
+
+z
