@@ -38,6 +38,7 @@ Requires Node 22 and PostgreSQL 16.
 cp .env.example .env          # set DB_*, TEST_DB_DATABASE, JWT_SECRET, ADMIN_*
 npm install
 npm run migrate && npm run seed   # seed adds categories + the ADMIN_* user
+# optional demo data (empty DB only): psql -d <db> -f packages/db/sample-data.sql
 npm run dev                   # API :4000, web http://localhost:3000 (proxies /api → API)
 ```
 
