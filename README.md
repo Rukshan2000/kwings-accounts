@@ -82,16 +82,27 @@ Postgres isn't published, and the API and web ports bind to `127.0.0.1` only. Th
    sudo nginx -t && sudo systemctl reload nginx
    ```
    Certbot's systemd timer handles renewal. Check it with `sudo certbot renew --dry-run`.
-5. **Deploy user:** needs Docker access (`docker` group) and write access to `/opt/kwings-accounts`. Put its private key in the GitHub secret `DEPLOY_SSH_KEY`.
+5. **Self-hosted runner** (no inbound SSH from GitHub: the runner connects out to GitHub). Run as a non-root user with Docker access:
+   ```bash
+   sudo useradd -m -s /bin/bash -G docker gh-runner && sudo chown gh-runner /opt/kwings-accounts
+   sudo -iu gh-runner
+   mkdir actions-runner && cd actions-runner
+   # Download + configure using the commands shown at:
+   #   GitHub repo → Settings → Actions → Runners → New self-hosted runner → Linux x64
+   ./config.sh --url https://github.com/Rukshan2000/kwings-accounts --token <TOKEN> --labels kwings-prod --unattended
+   exit
+   cd /home/gh-runner/actions-runner && sudo ./svc.sh install gh-runner && sudo ./svc.sh start
+   ```
+   Keep the repository **private**. On a public repo, a fork pull request could run code on this runner.
 
 ### 2. GitHub configuration
 
-Secrets: `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, `DEPLOY_PORT`. Create a `production` environment (adding required reviewers is optional). GHCR uses the built-in `GITHUB_TOKEN`.
+No deploy secrets are needed. GHCR uses the built-in `GITHUB_TOKEN`. Create a `production` environment (adding required reviewers is optional).
 
 ### 3. Branches and pipeline (`.github/workflows/deploy.yml`)
 
 - `main`: development. Pull requests and pushes run CI only. CI covers format, lint, typecheck, migrations, rollback and reapply, tests and the build, against a Postgres 16 service.
-- `production`: CI, then build images tagged with the commit SHA (`ghcr.io/rukshan2000/kwings-accounts-{api,web}:<sha>`), push them, then deploy over SSH.
+- `production`: CI, then build images tagged with the commit SHA (`ghcr.io/rukshan2000/kwings-accounts-{api,web}:<sha>`), push them, then deploy on the VPS via the self-hosted runner.
 
 The deploy runs `deploy.sh deploy <sha>` on the server:
 
