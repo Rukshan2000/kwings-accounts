@@ -59,47 +59,30 @@ Postgres isn't published, and the API and web ports bind to `127.0.0.1` only. Th
 
 ## Production
 
-### 1. One-time VPS setup
+### Quick setup (do once)
 
-1. **DNS:** add an `A` record `accounts` → the VPS IPv4 address (and an `AAAA` record if you use IPv6).
-2. **App directory:**
+1. **DNS:** at your domain provider, add an `A` record: name `accounts`, value = your VPS IP address.
+2. **On the VPS**, run these two commands. They ask for an admin email, an admin password and a runner token.
    ```bash
-   sudo mkdir -p /opt/kwings-accounts && sudo chown $USER /opt/kwings-accounts
-   cp .env.example /opt/kwings-accounts/.env   # fill in the "Production" block; chmod 600
+   curl -fsSL https://raw.githubusercontent.com/Rukshan2000/kwings-accounts/main/deploy/server-setup.sh -o setup.sh
+   sudo bash setup.sh
    ```
-   Generate secrets with `openssl rand -hex 32`. `POSTGRES_USER` owns the schema and runs migrations. `APP_DB_USERNAME` is the non-superuser runtime role, created automatically on the first Postgres start.
-3. **Nginx:** this adds a new site and doesn't touch existing ones.
+   When it asks for the **runner token**, open
+   <https://github.com/Rukshan2000/kwings-accounts/settings/actions/runners/new>
+   and copy only the token from the `./config.sh ... --token XXXXX` line.
+   The script ([deploy/server-setup.sh](deploy/server-setup.sh)):
+   - generates all secrets into `/opt/kwings-accounts/.env`
+   - adds the Nginx site and SSL certificate without touching other sites
+   - installs the GitHub Actions runner, so GitHub never needs SSH access
+3. **Make the GitHub repo private:** Settings → General → Change visibility. Do this after step 2, because step 2 downloads the script from the public repo.
+4. **Deploy:**
    ```bash
-   sudo cp deploy/nginx/accounts.kwingsmedia.com.conf /etc/nginx/sites-available/
-   # First run only: comment out the 443 server block (no certificate yet), then:
-   sudo ln -s /etc/nginx/sites-available/accounts.kwingsmedia.com.conf /etc/nginx/sites-enabled/
-   sudo nginx -t && sudo systemctl reload nginx
+   git checkout production && git merge main && git push && git checkout main
    ```
-4. **SSL:**
-   ```bash
-   sudo certbot certonly --webroot -w /var/www/html -d accounts.kwingsmedia.com
-   # re-enable the 443 block, then:
-   sudo nginx -t && sudo systemctl reload nginx
-   ```
-   Certbot's systemd timer handles renewal. Check it with `sudo certbot renew --dry-run`.
-5. **Self-hosted runner** (no inbound SSH from GitHub: the runner connects out to GitHub). Run as a non-root user with Docker access:
-   ```bash
-   sudo useradd -m -s /bin/bash -G docker gh-runner && sudo chown gh-runner /opt/kwings-accounts
-   sudo -iu gh-runner
-   mkdir actions-runner && cd actions-runner
-   # Download + configure using the commands shown at:
-   #   GitHub repo → Settings → Actions → Runners → New self-hosted runner → Linux x64
-   ./config.sh --url https://github.com/Rukshan2000/kwings-accounts --token <TOKEN> --labels kwings-prod --unattended
-   exit
-   cd /home/gh-runner/actions-runner && sudo ./svc.sh install gh-runner && sudo ./svc.sh start
-   ```
-   Keep the repository **private**. On a public repo, a fork pull request could run code on this runner.
 
-### 2. GitHub configuration
+To redeploy later, repeat step 4. The full manual Nginx config is in [deploy/nginx/](deploy/nginx/) for reference.
 
-No deploy secrets are needed. GHCR uses the built-in `GITHUB_TOKEN`. Create a `production` environment (adding required reviewers is optional).
-
-### 3. Branches and pipeline (`.github/workflows/deploy.yml`)
+### How the pipeline works (`.github/workflows/deploy.yml`)
 
 - `main`: development. Pull requests and pushes run CI only. CI covers format, lint, typecheck, migrations, rollback and reapply, tests and the build, against a Postgres 16 service.
 - `production`: CI, then build images tagged with the commit SHA (`ghcr.io/rukshan2000/kwings-accounts-{api,web}:<sha>`), push them, then deploy on the VPS via the self-hosted runner.
