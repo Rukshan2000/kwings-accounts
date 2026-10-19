@@ -1,43 +1,17 @@
 @import 'tailwindcss';
 
-/*
- * "Modern ledger" palette. Default Tailwind scales are re-mapped here so every page
- * picks up the theme without per-page edits:
- *   slate -> warm paper neutrals, blue -> ink (600/700) + saffron accent (400/500), navy -> deep ink green.
- */
+/* Blue theme: Tailwind's default blue/slate scales, plus a deep navy for the sidebar. */
 @theme {
-  --color-slate-50: #f7f6f1;
-  --color-slate-100: #efede5;
-  --color-slate-200: #e4e1d6;
-  --color-slate-300: #d0ccbe;
-  --color-slate-400: #9d988b;
-  --color-slate-500: #6f6b61;
-  --color-slate-600: #56534b;
-  --color-slate-700: #3e3c36;
-  --color-slate-800: #2a2925;
-  --color-slate-900: #1b1b18;
+  --color-navy-950: #0a1530;
+  --color-navy-900: #0f1f45;
+  --color-navy-800: #1a2f5e;
 
-  --color-blue-50: #f6eedd;
-  --color-blue-100: #efe2c4;
-  --color-blue-400: #e6a94b;
-  --color-blue-500: #cf8f2e;
-  --color-blue-600: #1f2b25;
-  --color-blue-700: #121a16;
-
-  --color-navy-950: #0c1310;
-  --color-navy-900: #121c17;
-  --color-navy-800: #1d2b24;
-
-  --color-emerald-600: #1f8a5b;
-  --color-red-600: #c8452f;
-
-  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-serif), ui-serif, Georgia, serif;
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
   @apply bg-slate-50 text-slate-800 antialiased;
-  font-feature-settings: 'ss01', 'cv11';
 }
 
 ::selection {
@@ -45,7 +19,7 @@ body {
 }
 
 dialog::backdrop {
-  background: rgb(18 28 23 / 0.4);
+  background: rgb(15 23 42 / 0.45);
   backdrop-filter: blur(3px);
 }
 

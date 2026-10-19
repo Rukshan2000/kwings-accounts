@@ -113,8 +113,8 @@ export default function DashboardPage() {
               <BarChart
                 data={data.monthly}
                 series={[
-                  { key: 'income', label: 'Income', color: '#1f8a5b' },
-                  { key: 'expenses', label: 'Expenses', color: '#e07a5f' },
+                  { key: 'income', label: 'Income', color: '#10b981' },
+                  { key: 'expenses', label: 'Expenses', color: '#ef4444' },
                 ]}
               />
             </Card>
@@ -123,7 +123,7 @@ export default function DashboardPage() {
               <BarChart
                 data={data.monthly}
                 series={[
-                  { key: 'profit', label: 'Profit / Loss', color: '#1f2b25', negativeColor: '#e07a5f' },
+                  { key: 'profit', label: 'Profit / Loss', color: '#2563eb', negativeColor: '#ef4444' },
                 ]}
               />
             </Card>

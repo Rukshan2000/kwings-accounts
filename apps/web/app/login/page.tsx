@@ -33,7 +33,7 @@ export default function LoginPage() {
           className="absolute inset-0 opacity-[0.07]"
           style={{
             backgroundImage:
-              'repeating-linear-gradient(to bottom, transparent 0 39px, #fff 39px 40px), linear-gradient(to right, transparent 0 72px, #e6a94b 72px 73px, transparent 73px)',
+              'repeating-linear-gradient(to bottom, transparent 0 39px, #fff 39px 40px), linear-gradient(to right, transparent 0 72px, #60a5fa 72px 73px, transparent 73px)',
           }}
         />
         <div className="relative flex items-center gap-2.5">
@@ -43,8 +43,8 @@ export default function LoginPage() {
           <span className="font-display text-xl">Kwings Accounts</span>
         </div>
         <div className="relative max-w-md">
-          <h2 className="font-display text-5xl leading-[1.05] font-light tracking-tight">
-            Every rupee, <em className="text-blue-400 italic">accounted</em> for.
+          <h2 className="font-display text-5xl leading-[1.1] font-semibold tracking-tight">
+            Every rupee, <em className="text-blue-400 not-italic">accounted</em> for.
           </h2>
           <p className="mt-5 text-slate-400">
             Income, expenses, projects and returns for Kwings Media — in one calm, clear ledger.
