@@ -11,8 +11,8 @@ REPO_URL=https://github.com/Rukshan2000/kwings-accounts
 APP_DIR=/opt/kwings-accounts
 RUNNER_USER=gh-runner
 RUNNER_DIR=/home/$RUNNER_USER/actions-runner
-WEB_PORT=3010
-API_PORT=4010
+WEB_PORT=3020
+API_PORT=4020
 
 say() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
 [[ $EUID -eq 0 ]] || { echo "Run with sudo: sudo bash $0"; exit 1; }
@@ -31,11 +31,14 @@ usermod -aG docker "$RUNNER_USER"
 say "Preparing $APP_DIR"
 mkdir -p "$APP_DIR"
 if [[ ! -f $APP_DIR/.env ]]; then
-  read -rp "Admin login email: " ADMIN_EMAIL
+  # Answers can be passed as env vars (ADMIN_EMAIL, ADMIN_PASSWORD, RUNNER_TOKEN) to skip the prompts.
+  [[ -n ${ADMIN_EMAIL:-} ]] || read -rp "Admin login email: " ADMIN_EMAIL
   while true; do
+    [[ -n ${ADMIN_PASSWORD:-} ]] || \
     read -rsp "Admin password (min 8 chars): " ADMIN_PASSWORD; echo
     [[ ${#ADMIN_PASSWORD} -ge 8 && $ADMIN_PASSWORD != *"'"* ]] && break
     echo "Use at least 8 characters, without the ' character."
+    ADMIN_PASSWORD=
   done
   cat >"$APP_DIR/.env" <<EOF
 POSTGRES_DB=kwings_accounts
@@ -116,7 +119,7 @@ if [[ -f $RUNNER_DIR/.runner ]]; then
 else
   echo "Open: $REPO_URL/settings/actions/runners/new"
   echo "Copy ONLY the token from the './config.sh ... --token XXXX' line."
-  read -rp "Runner token: " RUNNER_TOKEN
+  [[ -n ${RUNNER_TOKEN:-} ]] || read -rp "Runner token: " RUNNER_TOKEN
   case "$(uname -m)" in x86_64) ARCH=x64 ;; aarch64 | arm64) ARCH=arm64 ;; *) echo "Unsupported CPU"; exit 1 ;; esac
   VERSION=$(curl -fsSL https://api.github.com/repos/actions/runner/releases/latest | grep -oP '"tag_name": "v\K[^"]+')
   sudo -u "$RUNNER_USER" mkdir -p "$RUNNER_DIR"

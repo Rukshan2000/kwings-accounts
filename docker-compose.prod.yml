@@ -61,7 +61,7 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
     ports:
-      - '127.0.0.1:${API_HOST_PORT:-4010}:4000'
+      - '127.0.0.1:${API_HOST_PORT:-4020}:4000'
     networks: [internal]
     logging: &logging
       driver: json-file
@@ -73,7 +73,7 @@ services:
     depends_on:
       api: { condition: service_healthy }
     ports:
-      - '127.0.0.1:${WEB_HOST_PORT:-3010}:3000'
+      - '127.0.0.1:${WEB_HOST_PORT:-3020}:3000'
     networks: [internal]
     logging: *logging
 

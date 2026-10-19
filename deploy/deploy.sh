@@ -13,8 +13,8 @@ set -a
 # shellcheck disable=SC1091
 source .env
 set +a
-API_URL="http://127.0.0.1:${API_HOST_PORT:-4010}/api/health"
-WEB_URL="http://127.0.0.1:${WEB_HOST_PORT:-3010}/login"
+API_URL="http://127.0.0.1:${API_HOST_PORT:-4020}/api/health"
+WEB_URL="http://127.0.0.1:${WEB_HOST_PORT:-3020}/login"
 
 log() { echo "[$(date -u +%FT%TZ)] $*"; }
 current_tag() { tail -n 1 "$HISTORY" 2>/dev/null || true; }
