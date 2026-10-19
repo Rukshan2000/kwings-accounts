@@ -7,6 +7,7 @@ import { Badge, Button, Card, Field, FormModal, IconButton, PageHeader, TableSta
 import { api, useApi } from '@/lib/api';
 import { date } from '@/lib/format';
 import type { Category, TxType } from '@/lib/types';
+import { AppearanceSettings } from '@/components/wallpaper';
 
 type User = { id: string; name: string; email: string; created_at: string };
 
@@ -15,7 +16,10 @@ export default function SettingsPage() {
     <>
       <PageHeader title="Settings" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <ChangePassword />
+        <div className="space-y-6">
+          <ChangePassword />
+          <AppearanceSettings />
+        </div>
         <div className="space-y-6 xl:col-span-2">
           <Users />
           <Categories />

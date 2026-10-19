@@ -91,3 +91,35 @@ export interface Totals {
   netReturn: Money;
   investmentRoi: string | null;
 }
+
+interface PendingItem {
+  id: string;
+  type: TxType;
+  account_id: string | null;
+  category_id: string;
+  project_id: string | null;
+  amount: Money;
+  description: string | null;
+  account_name: string | null;
+  category_name: string;
+  project_name: string | null;
+}
+
+export interface Due extends PendingItem {
+  due_date: string;
+  recurring_id: string | null;
+}
+
+export interface Recurring extends PendingItem {
+  frequency: 'weekly' | 'monthly' | 'yearly';
+  start_date: string;
+  last_date: string | null;
+  is_active: boolean;
+}
+
+export interface Outstanding {
+  receivable: Money;
+  payable: Money;
+  overdue_receivable: Money;
+  overdue_payable: Money;
+}

@@ -9,8 +9,10 @@ import accounts from './routes/accounts';
 import auth from './routes/auth';
 import categories from './routes/categories';
 import dashboard from './routes/dashboard';
+import dues from './routes/dues';
 import investments from './routes/investments';
 import projects from './routes/projects';
+import recurring from './routes/recurring';
 import reports from './routes/reports';
 import transactions from './routes/transactions';
 import transfers from './routes/transfers';
@@ -49,6 +51,8 @@ export function createApp() {
   app.use('/api/transfers', transfers);
   app.use('/api/projects', projects);
   app.use('/api/investments', investments);
+  app.use('/api/dues', dues);
+  app.use('/api/recurring', recurring);
   app.use('/api/reports', reports);
   app.use('/api/users', users);
   app.use('/api', () => {

@@ -29,7 +29,12 @@ router.put('/:id', async (req, res) => {
   const body = categorySchema.parse(req.body);
   const current = await db('categories').where({ id }).first();
   if (!current) throw notFound('Category');
-  if (current.type !== body.type && (await db('transactions').where({ category_id: id }).first('id'))) {
+  const inUse = async () => {
+    for (const table of ['transactions', 'dues', 'recurring'])
+      if (await db(table).where({ category_id: id }).first('id')) return true;
+    return false;
+  };
+  if (current.type !== body.type && (await inUse())) {
     throw new HttpError(409, 'Cannot change the type of a category that is in use');
   }
   const [row] = await db('categories')

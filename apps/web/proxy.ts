@@ -5,7 +5,7 @@ export function proxy(request: NextRequest) {
   const loggedIn = request.cookies.has('ka_token');
   const { pathname } = request.nextUrl;
   if (pathname === '/login') {
-    return loggedIn ? NextResponse.redirect(new URL('/dashboard', request.url)) : NextResponse.next();
+    return loggedIn ? NextResponse.redirect(new URL('/home', request.url)) : NextResponse.next();
   }
   if (!loggedIn) return NextResponse.redirect(new URL('/login', request.url));
   return NextResponse.next();

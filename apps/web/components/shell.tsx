@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   ArrowLeftRight,
   BarChart3,
   Briefcase,
+  CalendarClock,
   FileText,
   LayoutDashboard,
   LogOut,
@@ -17,11 +18,14 @@ import {
   X,
 } from 'lucide-react';
 import { api, useApi } from '@/lib/api';
+import { Desktop, MobileShell } from './desktop';
+import { useLayoutPref } from './wallpaper';
 
 const nav = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/accounts', label: 'Accounts', icon: Wallet },
   { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
+  { href: '/dues', label: 'Dues & Recurring', icon: CalendarClock },
   { href: '/projects', label: 'Projects', icon: Briefcase },
   { href: '/investments', label: 'Investments', icon: PiggyBank },
   { href: '/reports', label: 'Reports', icon: FileText },
@@ -52,7 +56,30 @@ function Brand() {
   );
 }
 
+/** Desktop windows on wide screens, a home screen on phones, or the classic sidebar if chosen in Settings. */
 export function Shell({ children }: { children: ReactNode }) {
+  const [layout] = useLayoutPref();
+  const [wide, setWide] = useState<boolean | null>(null);
+  const pathname = usePathname();
+  const router = useRouter();
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const sync = () => setWide(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+  const classic = layout === 'classic';
+  useEffect(() => {
+    if (classic && pathname === '/home') router.replace('/dashboard');
+  }, [classic, pathname, router]);
+
+  if (wide === null) return null; // decided on the client only
+  if (classic) return <ClassicShell>{children}</ClassicShell>;
+  return wide ? <Desktop /> : <MobileShell>{children}</MobileShell>;
+}
+
+function ClassicShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const { data: user } = useApi<{ name: string; email: string }>('/auth/me');

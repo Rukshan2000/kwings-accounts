@@ -27,6 +27,8 @@ export async function api<T = unknown>(path: string, method = 'GET', body?: unkn
     window.location.href = '/login';
     throw new ApiError(401, 'Session expired');
   }
+  // Tell every open view (other windows, widgets, dock badges) that data changed.
+  if (res.ok && method !== 'GET') window.dispatchEvent(new Event('ka:changed'));
   if (res.status === 204) return undefined as T;
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -57,6 +59,8 @@ export function useApi<T>(path: string | null) {
 
   useEffect(() => {
     reload();
+    window.addEventListener('ka:changed', reload);
+    return () => window.removeEventListener('ka:changed', reload);
   }, [reload]);
 
   return { data, error, loading, reload };

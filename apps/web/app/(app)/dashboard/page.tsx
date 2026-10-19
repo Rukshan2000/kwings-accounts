@@ -25,7 +25,7 @@ import {
 } from '@/components/ui';
 import { qs, useApi } from '@/lib/api';
 import { date, isNegative, money, percent, startOfYear, today } from '@/lib/format';
-import type { Totals, Transaction } from '@/lib/types';
+import type { Outstanding, Totals, Transaction } from '@/lib/types';
 
 interface Dashboard {
   totals: Totals;
@@ -33,6 +33,7 @@ interface Dashboard {
   thisMonth: { income: string; expenses: string };
   monthly: { month: string; income: string; expenses: string; profit: string }[];
   recent: Transaction[];
+  outstanding: Outstanding;
 }
 
 export default function DashboardPage() {
@@ -54,6 +55,31 @@ export default function DashboardPage() {
         loading && <Spinner />
       ) : (
         <div className={loading ? 'opacity-60' : ''}>
+          <Link
+            href="/dues"
+            className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm hover:border-slate-300"
+          >
+            {(
+              [
+                [
+                  'To receive',
+                  data.outstanding.receivable,
+                  data.outstanding.overdue_receivable,
+                  'text-emerald-600',
+                ],
+                ['To pay', data.outstanding.payable, data.outstanding.overdue_payable, 'text-red-600'],
+              ] as const
+            ).map(([name, total, late, tone]) => (
+              <span key={name} className="tabular-nums">
+                <span className="text-slate-500">{name}:</span>{' '}
+                <span className={`font-medium ${tone}`}>{money(total)}</span>
+                {/[1-9]/.test(late) && (
+                  <span className="ml-1 text-xs text-red-600">({money(late, false)} overdue)</span>
+                )}
+              </span>
+            ))}
+            <span className="ml-auto text-blue-600">Dues →</span>
+          </Link>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
               label="Total Income"

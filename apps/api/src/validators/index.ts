@@ -69,6 +69,25 @@ export const transactionSchema = z.object({
   date,
 });
 
+/** Pending income/expense: `date` is the due date, the account is optional until paid. */
+export const dueSchema = transactionSchema.extend({ accountId: nullable(id) });
+
+export const paySchema = z.object({ accountId: id, amount, date });
+
+export const recurringSchema = dueSchema.omit({ date: true }).extend({
+  frequency: z.enum(['weekly', 'monthly', 'yearly']),
+  startDate: date,
+  isActive: z.boolean().default(true),
+});
+
+export const dueQuery = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(200).default(25),
+  q: opt(z.string().trim().max(200)),
+  type: opt(z.enum(['income', 'expense'])),
+  overdue: opt(z.enum(['true'])),
+});
+
 export const transferSchema = z
   .object({
     fromAccountId: id,

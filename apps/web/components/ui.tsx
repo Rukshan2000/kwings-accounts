@@ -1,6 +1,8 @@
 'use client';
 
 import {
+  createContext,
+  useContext,
   useEffect,
   useRef,
   useState,
@@ -66,6 +68,9 @@ export function Card({ children, className = '' }: { children: ReactNode; classN
   );
 }
 
+/** True inside a desktop window: the window title bar already names the page. */
+export const InWindow = createContext(false);
+
 export function PageHeader({
   title,
   subtitle,
@@ -75,10 +80,16 @@ export function PageHeader({
   subtitle?: string;
   actions?: ReactNode;
 }) {
+  const inWindow = useContext(InWindow);
   return (
-    <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div
+      className={`flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between ${inWindow ? 'mb-5' : 'mb-8'}`}
+    >
       <div>
-        <h1 className="font-display text-3xl font-medium tracking-tight text-slate-900 sm:text-[2.25rem]">
+        <h1
+          hidden={inWindow}
+          className="font-display text-3xl font-medium tracking-tight text-slate-900 sm:text-[2.25rem]"
+        >
           {title}
         </h1>
         {subtitle && <p className="mt-1.5 text-sm text-slate-500">{subtitle}</p>}
@@ -365,11 +376,11 @@ export function DateRange({
   onChange: (from: string, to: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex min-w-0 items-center gap-2">
       <input
         type="date"
         aria-label="From date"
-        className="input w-auto"
+        className="input w-auto min-w-0 flex-1"
         value={from}
         max={to || undefined}
         onChange={(e) => onChange(e.target.value, to)}
@@ -378,7 +389,7 @@ export function DateRange({
       <input
         type="date"
         aria-label="To date"
-        className="input w-auto"
+        className="input w-auto min-w-0 flex-1"
         value={to}
         min={from || undefined}
         onChange={(e) => onChange(from, e.target.value)}

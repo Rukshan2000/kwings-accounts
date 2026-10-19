@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { api } from '@/lib/api';
 import { today } from '@/lib/format';
-import type { Account, Project } from '@/lib/types';
+import type { Account, Category, Project, TxType } from '@/lib/types';
 import { Field, FormModal } from './ui';
 import { useToast } from './feedback';
 
@@ -37,21 +37,48 @@ export function AccountSelect({
   value,
   onChange,
   currentId,
+  optional,
 }: {
   accounts: Account[];
   value: string;
   onChange: (v: string) => void;
   currentId?: string;
+  optional?: boolean;
 }) {
   return (
-    <select className="input" required value={value} onChange={(e) => onChange(e.target.value)}>
-      <option value="">Select account</option>
+    <select className="input" required={!optional} value={value} onChange={(e) => onChange(e.target.value)}>
+      <option value="">{optional ? 'Decide when paid' : 'Select account'}</option>
       {accounts
         .filter((a) => a.is_active || a.id === currentId)
         .map((a) => (
           <option key={a.id} value={a.id}>
             {a.name}
             {a.is_active ? '' : ' (archived)'}
+          </option>
+        ))}
+    </select>
+  );
+}
+
+export function CategorySelect({
+  categories,
+  type,
+  value,
+  onChange,
+}: {
+  categories: Category[];
+  type: TxType;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <select className="input" required value={value} onChange={(e) => onChange(e.target.value)}>
+      <option value="">Select category</option>
+      {categories
+        .filter((c) => c.type === type)
+        .map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
           </option>
         ))}
     </select>

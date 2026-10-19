@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { db } from '../db';
 import { monthly, summary, totalBalance } from '../services/finance';
 import { rangeQuery } from '../validators';
+import { generateRecurring, outstanding } from './dues';
 import { transactionsQuery } from './transactions';
 
 const router = Router();
@@ -16,12 +17,14 @@ router.get('/', async (req, res) => {
   const chartFrom =
     range.from ?? iso(new Date(Date.UTC(Number(chartTo.slice(0, 4)), Number(chartTo.slice(5, 7)) - 12, 1)));
 
-  const [totals, balance, thisMonth, series, recent] = await Promise.all([
+  await generateRecurring(db);
+  const [totals, balance, thisMonth, series, recent, owed] = await Promise.all([
     summary(db, range),
     totalBalance(db),
     summary(db, { from: monthStart, to: iso(today) }),
     monthly(db, chartFrom, chartTo),
     transactionsQuery(range).limit(10),
+    outstanding(db),
   ]);
   res.json({
     totals,
@@ -29,6 +32,7 @@ router.get('/', async (req, res) => {
     thisMonth: { income: thisMonth.income, expenses: thisMonth.expenses },
     monthly: series,
     recent,
+    outstanding: owed,
   });
 });
 

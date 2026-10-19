@@ -14,7 +14,7 @@ export async function resetDb() {
     loadExtensions: ['.ts'],
   });
   await db.raw(
-    'truncate investments, transfers, transactions, projects, categories, accounts, users cascade',
+    'truncate dues, recurring, investments, transfers, transactions, projects, categories, accounts, users cascade',
   );
   await db('users').insert({
     name: 'Admin',
