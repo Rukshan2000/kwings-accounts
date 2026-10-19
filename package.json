@@ -1,0 +1,36 @@
+{
+  "name": "kwings-accounts",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npm run dev -w @kwings/api & npm run dev -w @kwings/web",
+    "build": "npm run build -w @kwings/db && npm run build -w @kwings/api && npm run build -w @kwings/web",
+    "typecheck": "npm run typecheck --workspaces",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm test -w @kwings/api",
+    "migrate": "npm run migrate -w @kwings/db",
+    "migrate:rollback": "npm run migrate:rollback -w @kwings/db",
+    "seed": "npm run seed -w @kwings/db",
+    "create-admin": "npm run create-admin -w @kwings/db"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
+    "eslint": "^10.13.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9",
+    "typescript-eslint": "^8.72.0"
+  }
+}

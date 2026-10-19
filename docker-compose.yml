@@ -1,0 +1,80 @@
+# Local: docker compose up -d --build   →  http://localhost:3000
+# Defaults below are for local use only; production uses docker-compose.prod.yml + a real .env.
+name: kwings-accounts-local
+
+x-db-env: &db-env
+  DB_HOST: postgres
+  DB_PORT: 5432
+  DB_DATABASE: kwings_accounts
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kwings_accounts
+      POSTGRES_USER: kwings_owner
+      POSTGRES_PASSWORD: ${LOCAL_POSTGRES_PASSWORD:-local-owner-password}
+      APP_DB_USERNAME: kwings_app
+      APP_DB_PASSWORD: ${LOCAL_APP_DB_PASSWORD:-local-app-password}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./packages/db/docker/init-app-role.sh:/docker-entrypoint-initdb.d/10-app-role.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U kwings_owner -d kwings_accounts']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [internal]
+
+  migrate:
+    build: { context: ., dockerfile: apps/api/Dockerfile }
+    image: kwings-accounts-api:local
+    command:
+      [
+        'sh',
+        '-c',
+        'node /app/packages/db/dist/scripts/db.js migrate && node /app/packages/db/dist/scripts/db.js seed && node /app/packages/db/dist/scripts/db.js create-admin',
+      ]
+    environment:
+      <<: *db-env
+      MIGRATION_DB_USERNAME: kwings_owner
+      MIGRATION_DB_PASSWORD: ${LOCAL_POSTGRES_PASSWORD:-local-owner-password}
+      ADMIN_EMAIL: ${LOCAL_ADMIN_EMAIL:-admin@kwingsmedia.com}
+      ADMIN_PASSWORD: ${LOCAL_ADMIN_PASSWORD:-ChangeMe123!}
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: 'no'
+    networks: [internal]
+
+  api:
+    image: kwings-accounts-api:local
+    restart: unless-stopped
+    environment:
+      <<: *db-env
+      NODE_ENV: production
+      DB_USERNAME: kwings_app
+      DB_PASSWORD: ${LOCAL_APP_DB_PASSWORD:-local-app-password}
+      JWT_SECRET: ${LOCAL_JWT_SECRET:-local-only-jwt-secret-change-me-0123456789}
+      COOKIE_SECURE: 'false' # plain http on localhost
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    ports:
+      - '127.0.0.1:4000:4000'
+    networks: [internal]
+
+  web:
+    build: { context: ., dockerfile: apps/web/Dockerfile }
+    image: kwings-accounts-web:local
+    restart: unless-stopped
+    depends_on:
+      api: { condition: service_healthy }
+    ports:
+      - '127.0.0.1:3000:3000'
+    networks: [internal]
+
+volumes:
+  pgdata:
+
+networks:
+  internal:

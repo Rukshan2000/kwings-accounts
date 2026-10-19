@@ -1,0 +1,84 @@
+# Production on the VPS (/opt/kwings-accounts). Driven by deploy.sh; secrets come from .env next to this file.
+# Only 127.0.0.1 ports are published; the host's Nginx is the public entry point.
+name: kwings-accounts
+
+x-db-env: &db-env
+  DB_HOST: postgres
+  DB_PORT: 5432
+  DB_DATABASE: ${POSTGRES_DB:-kwings_accounts}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-kwings_accounts}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      APP_DB_USERNAME: ${APP_DB_USERNAME:?set APP_DB_USERNAME}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init-app-role.sh:/docker-entrypoint-initdb.d/10-app-role.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [internal]
+
+  # One-off: docker compose -f docker-compose.prod.yml run --rm migrate
+  migrate:
+    image: ghcr.io/rukshan2000/kwings-accounts-api:${IMAGE_TAG:?set IMAGE_TAG}
+    profiles: [tools]
+    command:
+      [
+        'sh',
+        '-c',
+        'node /app/packages/db/dist/scripts/db.js migrate && node /app/packages/db/dist/scripts/db.js seed && node /app/packages/db/dist/scripts/db.js create-admin',
+      ]
+    environment:
+      <<: *db-env
+      MIGRATION_DB_USERNAME: ${POSTGRES_USER}
+      MIGRATION_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      ADMIN_NAME: ${ADMIN_NAME:-Administrator}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?set ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD}
+    depends_on:
+      postgres: { condition: service_healthy }
+    networks: [internal]
+
+  api:
+    image: ghcr.io/rukshan2000/kwings-accounts-api:${IMAGE_TAG:?set IMAGE_TAG}
+    restart: unless-stopped
+    environment:
+      <<: *db-env
+      NODE_ENV: production
+      DB_USERNAME: ${APP_DB_USERNAME}
+      DB_PASSWORD: ${APP_DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
+      COOKIE_SECURE: 'true'
+    depends_on:
+      postgres: { condition: service_healthy }
+    ports:
+      - '127.0.0.1:${API_HOST_PORT:-4010}:4000'
+    networks: [internal]
+    logging: &logging
+      driver: json-file
+      options: { max-size: '10m', max-file: '5' }
+
+  web:
+    image: ghcr.io/rukshan2000/kwings-accounts-web:${IMAGE_TAG:?set IMAGE_TAG}
+    restart: unless-stopped
+    depends_on:
+      api: { condition: service_healthy }
+    ports:
+      - '127.0.0.1:${WEB_HOST_PORT:-3010}:3000'
+    networks: [internal]
+    logging: *logging
+
+volumes:
+  pgdata: # never removed by deploy.sh
+
+networks:
+  internal:

@@ -1,0 +1,147 @@
+name: CI/CD
+
+on:
+  pull_request:
+  push:
+    branches: [main, production]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/production' }}
+
+env:
+  REGISTRY: ghcr.io
+  API_IMAGE: ghcr.io/rukshan2000/kwings-accounts-api
+  WEB_IMAGE: ghcr.io/rukshan2000/kwings-accounts-web
+
+jobs:
+  ci:
+    name: Lint, test, build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: kwings_accounts_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_DATABASE: kwings_accounts_test
+      TEST_DB_DATABASE: kwings_accounts_test
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: ci-only-secret-0123456789abcdef0123456789abcdef
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Formatting
+        run: npm run format:check
+      - name: ESLint
+        run: npm run lint
+      - name: Type check
+        run: npm run typecheck
+      - name: Migrate
+        run: npm run migrate
+      - name: Migration rollback + reapply
+        run: npm run migrate:rollback && npm run migrate && npm run seed
+      - name: Tests
+        run: npm test
+      - name: Build
+        run: npm run build
+
+  images:
+    name: Build & push images
+    needs: ci
+    if: github.event_name == 'push' && github.ref == 'refs/heads/production'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: true
+          tags: ${{ env.API_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: true
+          tags: ${{ env.WEB_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+
+  deploy:
+    name: Deploy to production
+    needs: images
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://accounts.kwingsmedia.com
+    concurrency:
+      group: production-deploy
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: read
+    env:
+      APP_DIR: /opt/kwings-accounts
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "${DEPLOY_PORT:-22}" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+      - name: Upload compose file and scripts
+        env:
+          TARGET: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
+          PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          scp -i ~/.ssh/deploy_key -P "${PORT:-22}" \
+            docker-compose.prod.yml deploy/deploy.sh packages/db/docker/init-app-role.sh \
+            "$TARGET:$APP_DIR/"
+      - name: Pull, migrate, switch
+        env:
+          TARGET: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
+          PORT: ${{ secrets.DEPLOY_PORT }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+        run: |
+          # Token goes over stdin, never onto the remote command line.
+          printf '%s' "$GHCR_TOKEN" | ssh -i ~/.ssh/deploy_key -p "${PORT:-22}" "$TARGET" \
+            "docker login ghcr.io -u '$GHCR_USER' --password-stdin && \
+             chmod +x $APP_DIR/deploy.sh $APP_DIR/init-app-role.sh && \
+             $APP_DIR/deploy.sh deploy ${{ github.sha }}; status=\$?; docker logout ghcr.io; exit \$status"
+      - name: Smoke tests
+        run: |
+          for i in $(seq 1 10); do
+            curl -fsS https://accounts.kwingsmedia.com/api/health && \
+            curl -fsS -o /dev/null https://accounts.kwingsmedia.com/login && exit 0
+            sleep 5
+          done
+          echo "Smoke tests failed" && exit 1

@@ -1,0 +1,29 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-navy-950: #0b1426;
+  --color-navy-900: #0f1d36;
+  --color-navy-800: #172a4d;
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+body {
+  @apply bg-slate-50 text-slate-800 antialiased;
+}
+
+dialog::backdrop {
+  background: rgb(15 23 42 / 0.45);
+}
+
+.input {
+  @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-100;
+}
+
+.th {
+  @apply px-4 py-3 text-left text-xs font-semibold tracking-wide whitespace-nowrap text-slate-500 uppercase;
+}
+
+.td {
+  @apply px-4 py-3 text-sm whitespace-nowrap;
+}
